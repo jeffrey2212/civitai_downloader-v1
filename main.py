@@ -7,14 +7,12 @@ import sys
 from PIL import Image
 from tqdm import tqdm
 
-model_id = 0 
-api_url = f"https://civitai.com/api/v1/models/{model_id}"
-
 def get_download_link(url):
     model_id = url.split('/')[-2]
     if model_id.isdigit() != True:
         model_id = url.split('/')[-1]
         
+    api_url = f"https://civitai.com/api/v1/models/{model_id}"
     response = requests.get(api_url)
     if response.status_code == 200:
         data = json.loads(response.text)
@@ -26,23 +24,19 @@ def get_download_link(url):
 
         if model_file:
             download_link = model_file["downloadUrl"]
-            print(f"Download link: {download_link}")
             filename = model_file['name']
             model_type = data['type']
-            print(f"Filename: {filename}")
-            print(f"Model type: {model_type}")
-            return download_link, filename, model_type
-    return None, None, None
+            return download_link, filename, model_type, data
+    return None, None, None, None
 
 def extract_links_from_markdown(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
 
-    link_pattern = r'\[(.+?)\]\((.+?)\)'
+    link_pattern = r'(https?://\S+)'  # updated regex pattern to capture all URLs
     links = re.findall(link_pattern, content)
-    link_list = [link[1] for link in links]
 
-    return link_list
+    return links
 
 def download_file(url, file_path):
     # Check if the file already exists
@@ -102,34 +96,28 @@ def main():
     links = extract_links_from_markdown(file_path)
 
     for link in links:
-        response = requests.get(api_url)
-        if response.status_code == 200:
-            data = json.loads(response.text)
+        download_link, filename, model_type, data = get_download_link(link)
 
-            download_link, filename, model_type = get_download_link(data)
-
-            if download_link and filename and model_type:
-                destination_folder = base_destination_folder
-                if destination_folder:
-                    destination_folder = os.path.join(destination_folder, model_type)
-                else:
-                    destination_folder = model_type
-
-                if not os.path.exists(destination_folder):
-                    os.makedirs(destination_folder)
-
-                output_path = os.path.join(destination_folder, filename)
-                print(f"Downloading {filename}...")
-
-                if download_file(download_link, output_path):
-                    print(f"{filename} downloaded successfully.")
-                    download_preview(data, filename, destination_folder)
-                else:
-                    print(f"Error: Failed to download {filename}.")
+        if download_link and filename and model_type:
+            destination_folder = base_destination_folder
+            if destination_folder:
+                destination_folder = os.path.join(destination_folder, model_type)
             else:
-                print(f"Error: Unable to get download link for {link}.")
+                destination_folder = model_type
+
+            if not os.path.exists(destination_folder):
+                os.makedirs(destination_folder)
+
+            output_path = os.path.join(destination_folder, filename)
+            print(f"Downloading {filename}...")
+
+            if download_file(download_link, output_path):
+                print(f"{filename} downloaded successfully.")
+                download_preview(data, filename, destination_folder)
+            else:
+                print(f"Error: Failed to download {filename}.")
         else:
-            print(f"Error: API request failed for {link}.")
+            print(f"Error: Unable to get download link for {link}.")
 
 
 
