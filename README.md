@@ -1,6 +1,6 @@
 # Civitai Model Downloader
 
-This Python script allows you to download 3D models from the Civitai website by providing a markdown file with links to the models.
+This Python script allows you to download AI models from the Civitai website by providing a markdown file with links to the models.
 
 ## Features
 
