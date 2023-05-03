@@ -19,7 +19,7 @@ def get_download_link(url):
         data = json.loads(response.text)
         model_file = None
         for file in data.get("modelVersions")[0]["files"]:
-            if file["type"] == "Model":
+            if file["type"] in ("Model", "Negative"):
                 model_file = file
                 break
 
