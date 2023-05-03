@@ -7,11 +7,12 @@ import sys
 from PIL import Image
 from tqdm import tqdm
 
+
 def get_download_link(url):
     model_id = url.split('/')[-2]
     if model_id.isdigit() != True:
         model_id = url.split('/')[-1]
-        
+
     api_url = f"https://civitai.com/api/v1/models/{model_id}"
     response = requests.get(api_url)
     if response.status_code == 200:
@@ -29,19 +30,22 @@ def get_download_link(url):
             return download_link, filename, model_type, data
     return None, None, None, None
 
+
 def extract_links_from_markdown(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
 
-    link_pattern = r'(https?://\S+)'  # updated regex pattern to capture all URLs
+    link_pattern = r'(?:(?:\[[^\]]*]\()|(?:^|[^\(]))(https?://\S+?)(?:\)|\s|$)'
     links = re.findall(link_pattern, content)
 
     return links
 
+
 def download_file(url, file_path):
     # Check if the file already exists
     if os.path.exists(file_path):
-        print(f"File '{os.path.basename(file_path)}' already exists. Skipping download.")
+        print(
+            f"File '{os.path.basename(file_path)}' already exists. Skipping download.")
         return True
 
     response = requests.get(url, stream=True)
@@ -55,13 +59,15 @@ def download_file(url, file_path):
         return False
     return True
 
+
 def download_preview(data, filename, destination_folder):
     images = data.get("modelVersions")[0].get("images")
     if images:
         preview_url = images[0].get("url")
         preview_ext = os.path.splitext(preview_url)[1]
         filename_without_ext = os.path.splitext(filename)[0]
-        preview_path = os.path.join(destination_folder, f"{filename_without_ext}.png")
+        preview_path = os.path.join(
+            destination_folder, f"{filename_without_ext}.png")
 
         if not os.path.exists(preview_path):
             response = requests.get(preview_url, stream=True)
@@ -69,20 +75,24 @@ def download_preview(data, filename, destination_folder):
                 with open(preview_path, 'wb') as file:
                     for chunk in response.iter_content(chunk_size=8192):
                         file.write(chunk)
-                
+
                 if preview_ext.lower() != '.png':
                     img = Image.open(preview_path)
                     img.save(preview_path, 'PNG')
             else:
                 print(f"Failed to download preview image: {preview_url}")
         else:
-            print(f"Preview image '{filename_without_ext}.png' already exists. Skipping download.")
+            print(
+                f"Preview image '{filename_without_ext}.png' already exists. Skipping download.")
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Download models from Civitai')
-    parser.add_argument('-file', type=str, required=True, help='Markdown file containing model links')
-    parser.add_argument('-path', type=str, default='', help='Optional destination folder')
+    parser = argparse.ArgumentParser(
+        description='Download models from Civitai')
+    parser.add_argument('-file', type=str, required=True,
+                        help='Markdown file containing model links')
+    parser.add_argument('-path', type=str, default='',
+                        help='Optional destination folder')
 
     args = parser.parse_args()
 
@@ -101,7 +111,8 @@ def main():
         if download_link and filename and model_type:
             destination_folder = base_destination_folder
             if destination_folder:
-                destination_folder = os.path.join(destination_folder, model_type)
+                destination_folder = os.path.join(
+                    destination_folder, model_type)
             else:
                 destination_folder = model_type
 
@@ -118,7 +129,6 @@ def main():
                 print(f"Error: Failed to download {filename}.")
         else:
             print(f"Error: Unable to get download link for {link}.")
-
 
 
 if __name__ == '__main__':
