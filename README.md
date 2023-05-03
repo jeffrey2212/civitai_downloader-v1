@@ -1,4 +1,4 @@
-# civital_downloader
+# civitai_downloader
 
 A small python tool for downloading civitai models. 
 
