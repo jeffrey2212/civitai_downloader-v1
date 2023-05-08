@@ -5,6 +5,8 @@
 test.py
 sample.md 
 sample1.md
+metadata.json
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -7,7 +7,6 @@ import sys
 from PIL import Image
 from tqdm import tqdm
 
-
 def get_download_link(url):
     model_id = url.split('/')[-2]
     if model_id.isdigit() != True:
@@ -60,18 +59,19 @@ def download_file(url, file_path):
     return True
 
 
-def download_preview(data, filename, destination_folder):
+def download_preview(data, destination_folder):
     images = data.get("modelVersions")[0].get("images")
+    filename = data.get("modelVersions")[0]["files"][0]["name"].split('.')[0].preview.png
     if images:
         preview_url = images[0].get("url")
         preview_ext = os.path.splitext(preview_url)[1]
-        filename_without_ext = os.path.splitext(filename)[0]
         preview_path = os.path.join(
-            destination_folder, f"{filename_without_ext}.png")
+            destination_folder, f"{filename}")
 
         if not os.path.exists(preview_path):
             response = requests.get(preview_url, stream=True)
             if response.status_code == 200:
+                print(f"Downloading preview image: {filename}")
                 with open(preview_path, 'wb') as file:
                     for chunk in response.iter_content(chunk_size=8192):
                         file.write(chunk)
@@ -80,11 +80,23 @@ def download_preview(data, filename, destination_folder):
                     img = Image.open(preview_path)
                     img.save(preview_path, 'PNG')
             else:
-                print(f"Failed to download preview image: {preview_url}")
+                print(f"Failed to download preview image: {filename}")
         else:
             print(
-                f"Preview image '{filename_without_ext}.png' already exists. Skipping download.")
+                f"Preview image '{filename}' already exists. Skipping download.")
 
+def download_metadata(data, destination_folder):
+    metadata = data
+    filename_without_ext = data.get("modelVersions")[0]["files"][0]["name"].split('.')[0]
+    metadata_path = os.path.join(
+            destination_folder, f"{filename_without_ext}.civitai.info")
+
+    if not os.path.exists(metadata_path):
+        print(f"Downloading metadata: {filename_without_ext}.civitai.info")
+        json.dump(metadata, open(metadata_path, 'w'), indent=4)
+    else:
+        print(
+            f"Metadata '{filename_without_ext}.civitai.info' already exists. Skipping download.")
 
 def main():
     parser = argparse.ArgumentParser(
@@ -124,7 +136,8 @@ def main():
 
             if download_file(download_link, output_path):
                 print(f"{filename} downloaded successfully.")
-                download_preview(data, filename, destination_folder)
+                download_preview(data, destination_folder)
+                download_metadata(data, destination_folder)
             else:
                 print(f"Error: Failed to download {filename}.")
         else:
