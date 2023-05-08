@@ -61,7 +61,7 @@ def download_file(url, file_path):
 
 def download_preview(data, destination_folder):
     images = data.get("modelVersions")[0].get("images")
-    filename = data.get("modelVersions")[0]["files"][0]["name"].split('.')[0].preview.png
+    filename = data.get("modelVersions")[0]["files"][0]["name"].split('.')[0]+".preview.png"
     if images:
         preview_url = images[0].get("url")
         preview_ext = os.path.splitext(preview_url)[1]
