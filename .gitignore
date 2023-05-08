@@ -6,7 +6,8 @@ test.py
 sample.md 
 sample1.md
 metadata.json
-
+.vscode/
+.vscode/*
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
