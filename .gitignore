@@ -3,8 +3,8 @@
 
 #ingore test.py
 test.py
+test2.py
 sample.md 
-sample1.md
 metadata.json
 .vscode/
 .vscode/*
