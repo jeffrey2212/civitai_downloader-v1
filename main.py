@@ -34,7 +34,7 @@ def extract_links_from_markdown(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
 
-    link_pattern = r'(?:(?:\[[^\]]*]\()|(?:^|[^\(]))(https?://\S+?)(?:\)|\s|$)'
+    link_pattern = r'(https?://\S+?)(?:\)|\s|$)'
     links = re.findall(link_pattern, content)
 
     return links
