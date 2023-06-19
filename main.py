@@ -7,6 +7,7 @@ import sys
 from PIL import Image
 from tqdm import tqdm
 
+
 def get_download_link(url):
     model_id = url.split('/')[-2]
     if model_id.isdigit() != True:
@@ -47,7 +48,10 @@ def download_file(url, file_path):
             f"File '{os.path.basename(file_path)}' already exists. Skipping download.")
         return True
 
-    response = requests.get(url, stream=True)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+    response = requests.get(url, headers=headers, stream=True)
+    # response = requests.get(url, stream=True)
     total_size = int(response.headers.get('content-length', 0))
 
     if response.status_code == 200:
@@ -61,7 +65,8 @@ def download_file(url, file_path):
 
 def download_preview(data, destination_folder):
     images = data.get("modelVersions")[0].get("images")
-    filename = data.get("modelVersions")[0]["files"][0]["name"].split('.')[0]+".preview.png"
+    filename = data.get("modelVersions")[
+        0]["files"][0]["name"].split('.')[0]+".preview.png"
     if images:
         preview_url = images[0].get("url")
         preview_ext = os.path.splitext(preview_url)[1]
@@ -69,7 +74,9 @@ def download_preview(data, destination_folder):
             destination_folder, f"{filename}")
 
         if not os.path.exists(preview_path):
-            response = requests.get(preview_url, stream=True)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+            response = requests.get(preview_url, headers=headers, stream=True)
             if response.status_code == 200:
                 print(f"Downloading preview image: {filename}")
                 with open(preview_path, 'wb') as file:
@@ -85,11 +92,13 @@ def download_preview(data, destination_folder):
             print(
                 f"Preview image '{filename}' already exists. Skipping download.")
 
+
 def download_metadata(data, destination_folder):
     metadata = data
-    filename_without_ext = data.get("modelVersions")[0]["files"][0]["name"].split('.')[0]
+    filename_without_ext = data.get("modelVersions")[
+        0]["files"][0]["name"].split('.')[0]
     metadata_path = os.path.join(
-            destination_folder, f"{filename_without_ext}.civitai.info")
+        destination_folder, f"{filename_without_ext}.civitai.info")
 
     if not os.path.exists(metadata_path):
         print(f"Downloading metadata: {filename_without_ext}.civitai.info")
@@ -97,6 +106,7 @@ def download_metadata(data, destination_folder):
     else:
         print(
             f"Metadata '{filename_without_ext}.civitai.info' already exists. Skipping download.")
+
 
 def main():
     parser = argparse.ArgumentParser(
